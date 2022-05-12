@@ -29,6 +29,7 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     var crSensRefBG = profile.crSensRefBG;
     var logCRratio = "";
     var logCRratioLimited = "";
+    var crScaleFactor = profile.crScaleFactor;
     
     function round(value, precision) {
         var multiplier = Math.pow(10, precision || 0);
@@ -377,13 +378,13 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     //
     if (preferences.useNewFormula == true) {
         var newRatio = profile.sens * adjustmentFactor * TDD * Math.log(BG/insulinFactor+1) / 1800;
-        var crRatio = profile.sens * adjustmentFactor * TDD * Math.log(crSensRefBG/insulinFactor+1) / 1800; // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL)
+        var crRatio = (profile.sens * adjustmentFactor * TDD * Math.log(crSensRefBG/insulinFactor+1) / 1800 + crScaleFactor)/(crScaleFactor + 1); // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL)
         formula = "Logarithmic formula. InsulinFactor: " + insulinFactor + ". ";
 
     }
     else {
         var newRatio = profile.sens * adjustmentFactor * TDD * BG / 277700;
-        var crRatio = profile.sens * adjustmentFactor * TDD * crSensRefBG / 277700; // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL)
+        var crRatio = (profile.sens * adjustmentFactor * TDD * crSensRefBG / 277700 + crScaleFactor)/(crScaleFactor + 1); // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL)
         formula = "Original formula. ";
     }
             

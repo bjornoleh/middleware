@@ -6,6 +6,8 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     var useDynamicCR = preferences.enableDynamicCR;
     const minLimitChris = profile.autosens_min;
     const maxLimitChris = profile.autosens_max;
+    const minCRratio = profile.minCRratio;
+    const maxCRratio = profile.maxCRratio;
     const adjustmentFactor = preferences.adjustmentFactor;
     const currentMinTarget = profile.min_bg;
     var exerciseSetting = false;
@@ -24,6 +26,8 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     var bolusInsulin = 0;
     var scheduledBasalInsulin = 0;
     var quota = 0;
+    var crSensRefBG = 100;
+    var logCRratio = "";
     
     function round(value, precision) {
         var multiplier = Math.pow(10, precision || 0);
@@ -372,22 +376,27 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     //
     if (preferences.useNewFormula == true) {
         var newRatio = profile.sens * adjustmentFactor * TDD * Math.log(BG/insulinFactor+1) / 1800;
+        var crRatio = profile.sens * adjustmentFactor * TDD * Math.log(crSensRefBG/insulinFactor+1) / 1800; // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL)
         formula = "Logarithmic formula. InsulinFactor: " + insulinFactor + ". ";
 
     }
     else {
         var newRatio = profile.sens * adjustmentFactor * TDD * BG / 277700;
+        var crRatio = profile.sens * adjustmentFactor * TDD * crSensRefBG / 277700; // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL)
         formula = "Original formula. ";
     }
             
     var isf = profile.sens / newRatio;
 
-    // Dynamic CR (Test)
+    // TDD-corrected CR based on TDD, profile.sens, adjustmentFactor and crSensRefBG (Test)
     var cr = profile.carb_ratio;
     if (useDynamicCR == true) {
-        cr = round(profile.carb_ratio/newRatio, 2);
+        cr = round(profile.carb_ratio/crRatio, 2); // TDD corrected CR calculated at crSensRefBG (e.g. 100 mg/dL)
         profile.carb_ratio = cr;
-    }
+        logCRratio = "TDD-corrected CR is on, crRatio = " + crRatio + ", TDD-corrected CR: " + cr + " g/U.";
+        } else {
+            logCRratio = "TDD-corrected CR is off, CR = " + cr + " g/U.";
+        }
     
     if (chrisFormula == true && TDD > 0) {
        
@@ -402,14 +411,23 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
             newRatio = minLimitChris;
         }
         
+        // Respect autosens.max and autosens.min limits for TDD adjusted CR
+        if (crRatio > maxCRratio) {
+            logCRratio = "TDD adjusted CR hit limit by maxCRratio setting: " + maxCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / maxCRratio).toPrecision(2) + " g/U ";
+            newRatio = maxCRratio;
+        } else if (newRatio < minCRratio) {
+            logCRratio = "TDD adjusted CR hit limit by minCRratio setting: " + minCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / minCRratio).toPrecision(2) + " g/U ";
+            newRatio = minCRratio;
+        }
+
         // Set the new ratio
         autosens.ratio = newRatio;
         
-        logOutPut = startLog + dataLog + bgLog + afLog + formula + log + logTDD + logBolus + logTempBasal + logBasal;
+        logOutPut = startLog + dataLog + bgLog + afLog + formula + log + logCRratio + logTDD + logBolus + logTempBasal + logBasal;
     } else if (chrisFormula == false && useDynamicCR == true) {
-        logOutPut = startLog + bgLog + afLog + formula + "Dynamic ISF is off. Dynamic CR: " + cr + " g/U.";
+        logOutPut = startLog + bgLog + afLog + formula + "Dynamic ISF is off." + logCRratio;
     } else {
-        logOutPut = startLog + "Dynamic ISF is off. Dynamic CR is off." ;
+        logOutPut = startLog + "Dynamic ISF is off. TDD-corrected CR is off." ;
     }
 
     return logOutPut;

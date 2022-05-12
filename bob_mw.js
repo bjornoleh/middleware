@@ -403,7 +403,7 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     if (useDynamicCR == true) {
         cr = round(profile.carb_ratio/crRatio, 1); // TDD corrected CR calculated at crSensRefBG (e.g. 100 mg/dL)
         profile.carb_ratio = cr;
-        logCRratio = " TDD-corrected CR is on, crRatio = " + crRatio.toPrecision(3) + ", TDD-corrected CR: " + cr.toPrecision(3) + " g/U. ";
+        logCRratio = " TDD-corrected CR is on, crRatio = " + crRatio.toPrecision(3) + "Reference BG level: " + crSensRefBG", TDD-corrected CR: " + cr.toPrecision(3) + " g/U";
         } else {
             logCRratio = " TDD-corrected CR is off, CR = " + cr.toPrecision(3) + " g/U. ";
         }

@@ -391,7 +391,7 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     // TDD-corrected CR based on TDD, profile.sens, adjustmentFactor and crSensRefBG (Test)
     var cr = profile.carb_ratio;
     if (useDynamicCR == true) {
-        cr = round(profile.carb_ratio/crRatio, 2); // TDD corrected CR calculated at crSensRefBG (e.g. 100 mg/dL)
+        cr = round(profile.carb_ratio/crRatio, 1); // TDD corrected CR calculated at crSensRefBG (e.g. 100 mg/dL)
         profile.carb_ratio = cr;
         logCRratio = " TDD-corrected CR is on, crRatio = " + crRatio.toPrecision(3) + ", TDD-corrected CR: " + cr + " g/U";
         } else {

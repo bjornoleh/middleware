@@ -26,7 +26,7 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     var bolusInsulin = 0;
     var scheduledBasalInsulin = 0;
     var quota = 0;
-    var crSensRefBG = 100;
+    var crSensRefBG = profile.crSensRefBG;
     var logCRratio = "";
     var logCRratioLimited = "";
     

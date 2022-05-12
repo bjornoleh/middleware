@@ -404,20 +404,20 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
 
         // Respect autosens.max and autosens.min limits
         if (newRatio > maxLimitChris) {
-            log = "Dynamic ISF hit limit by autosens_max setting: " + maxLimitChris + " (" +  newRatio.toPrecision(3) + ")" + ". ISF: " + (profile.sens / maxLimitChris).toPrecision(3) + " mg/dl/U (" + ((profile.sens / maxLimitChris) * 0.0555).toPrecision(3) ;
+            log = "Dynamic ISF hit limit by autosens_max setting: " + maxLimitChris + " (" +  newRatio.toPrecision(3) + ")" + ". ISF: " + (profile.sens / maxLimitChris).toPrecision(3) + " mg/dl/U (" + ((profile.sens / maxLimitChris) * 0.0555).toPrecision(3) + "). " ;
             newRatio = maxLimitChris;
         } else if (newRatio < minLimitChris) {
-            log = "Dynamic ISF hit limit by autosens_min setting: " + minLimitChris + " (" +  newRatio.toPrecision(3) + ")" + ". ISF: " + (profile.sens / minLimitChris).toPrecision(3) + " mg/dl/U (" + ((profile.sens / minLimitChris) * 0.0555).toPrecision(3) ;
+            log = "Dynamic ISF hit limit by autosens_min setting: " + minLimitChris + " (" +  newRatio.toPrecision(3) + ")" + ". ISF: " + (profile.sens / minLimitChris).toPrecision(3) + " mg/dl/U (" + ((profile.sens / minLimitChris) * 0.0555).toPrecision(3) + "). " ;
             newRatio = minLimitChris;
         }
         
         // Respect autosens.max and autosens.min limits for TDD adjusted CR
         if (crRatio > maxCRratio) {
             logCRratio = "TDD adjusted CR hit limit by maxCRratio setting: " + maxCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / maxCRratio).toPrecision(2) + " g/U ";
-            newRatio = maxCRratio;
+            crRatio = maxCRratio;
         } else if (newRatio < minCRratio) {
             logCRratio = "TDD adjusted CR hit limit by minCRratio setting: " + minCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / minCRratio).toPrecision(2) + " g/U ";
-            newRatio = minCRratio;
+            crRatio = minCRratio;
         }
 
         // Set the new ratio

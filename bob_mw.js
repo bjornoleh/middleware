@@ -348,7 +348,7 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     logBolus = ". Bolus insulin: " + bolusInsulin.toPrecision(5) + " U";
     logTempBasal = ". Temporary basal insulin: " + tempInsulin.toPrecision(5) + " U";
     logBasal = ". Insulin with scheduled basal rate: " + scheduledBasalInsulin.toPrecision(5) + " U";
-    logTDD = ". TDD past 24h is: " + TDD.toPrecision(5) + " U";
+    logTDD = " TDD past 24h is: " + TDD.toPrecision(5) + " U";
     
     var startLog = "Dynamic ratios log: ";
     var afLog = "AF: " + adjustmentFactor + ". ";
@@ -392,10 +392,10 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
 
     // Respect minCRratio and maxCRratio limits for TDD adjusted CR
         if (crRatio > maxCRratio) {
-            logCRratioLimited = "TDD adjusted CR hit limit by maxCRratio setting: " + maxCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / maxCRratio).toPrecision(3) + " g/U ";
+            logCRratioLimited = ". TDD adjusted CR hit limit by maxCRratio setting: " + maxCRratio + " (" +  crRatio.toPrecision(3) + ")" + ", CR: " + (profile.carb_ratio / maxCRratio).toPrecision(3) + " g/U ";
             crRatio = maxCRratio;
         } else if (newRatio < minCRratio) {
-            logCRratioLimited = "TDD adjusted CR hit limit by minCRratio setting: " + minCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / minCRratio).toPrecision(3) + " g/U ";
+            logCRratioLimited = ". TDD adjusted CR hit limit by minCRratio setting: " + minCRratio + " (" +  crRatio.toPrecision(3) + ")" + ", CR: " + (profile.carb_ratio / minCRratio).toPrecision(3) + " g/U ";
             crRatio = minCRratio;
         }
 
@@ -404,7 +404,7 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     if (useDynamicCR == true) {
         cr = round(profile.carb_ratio/crRatio, 1); // TDD corrected CR calculated at crSensRefBG (e.g. 100 mg/dL)
         profile.carb_ratio = cr;
-        logCRratio = " TDD-corrected CR is on, crRatio = " + crRatio.toPrecision(3) + "Reference BG level: " + crSensRefBG", TDD-corrected CR: " + cr.toPrecision(3) + " g/U";
+        logCRratio = " TDD-corrected CR is on, crRatio = " + crRatio.toPrecision(3) + ", Reference BG level: " + crSensRefBG + ", CR scale factor: " + crScaleFactor + ", TDD-corrected CR: " + cr.toPrecision(3) + " g/U";
         } else {
             logCRratio = " TDD-corrected CR is off, CR = " + cr.toPrecision(3) + " g/U. ";
         }

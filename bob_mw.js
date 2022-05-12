@@ -28,6 +28,7 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     var quota = 0;
     var crSensRefBG = 100;
     var logCRratio = "";
+    var logCRratioLimited = "";
     
     function round(value, precision) {
         var multiplier = Math.pow(10, precision || 0);
@@ -390,10 +391,10 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
 
     // Respect minCRratio and maxCRratio limits for TDD adjusted CR
         if (crRatio > maxCRratio) {
-            logCRratio = "TDD adjusted CR hit limit by maxCRratio setting: " + maxCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / maxCRratio).toPrecision(2) + " g/U ";
+            logCRratioLimited = "TDD adjusted CR hit limit by maxCRratio setting: " + maxCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / maxCRratio).toPrecision(2) + " g/U ";
             crRatio = maxCRratio;
         } else if (newRatio < minCRratio) {
-            logCRratio = "TDD adjusted CR hit limit by minCRratio setting: " + minCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / minCRratio).toPrecision(2) + " g/U ";
+            logCRratioLimited = "TDD adjusted CR hit limit by minCRratio setting: " + minCRratio + " (" +  crRatio.toPrecision(3) + ")" + ". CR: " + (profile.carb_ratio / minCRratio).toPrecision(2) + " g/U ";
             crRatio = minCRratio;
         }
 
@@ -423,9 +424,9 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
         // Set the new ratio
         autosens.ratio = newRatio;
         
-        logOutPut = startLog + dataLog + bgLog + afLog + formula + log + logCRratio + logTDD + logBolus + logTempBasal + logBasal;
+        logOutPut = startLog + dataLog + bgLog + afLog + formula + log + logCRratio + logCRratioLimited + logTDD + logBolus + logTempBasal + logBasal;
     } else if (chrisFormula == false && useDynamicCR == true) {
-        logOutPut = startLog + bgLog + afLog + formula + "Dynamic ISF is off." + logCRratio;
+        logOutPut = startLog + bgLog + afLog + formula + "Dynamic ISF is off." + logCRratio + logCRratioLimited;
     } else {
         logOutPut = startLog + "Dynamic ISF is off. TDD-corrected CR is off." ;
     }

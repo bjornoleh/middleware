@@ -21,6 +21,9 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     var logOutPut = "";
     var current = 0;
     var TDD = 0;
+    var averageTDD = profile.averageTDD;
+    var weightingfactor24hTDD = profile.weightingfactor24hTDD;
+    var weightedTDD = 0;
     var insulin = 0;
     var tempInsulin = 0;
     var bolusInsulin = 0;
@@ -355,6 +358,8 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
     var bgLog = "BG: " + BG + " mg/dl (" + (BG * 0.0555).toPrecision(2) + " mmol/l). ";
     var formula = "";
 
+    weightedTDD = averageTDD * (1-weightingfactor24hTDD) + TDD * weightingfactor24hTDD; //  enter averageTDD manually for now
+
     // Insulin curve
     const curve = preferences.curve;
     const ipt = preferences.insulinPeakTime;
@@ -373,19 +378,21 @@ function middleware(iob, currenttemp, glucose, profile, autosens, meal, reservoi
 
     // Modified Chris Wilson's' formula with added adjustmentFactor for tuning and to use instead of autosens.ratio:
     // var newRatio = profile.sens * adjustmentFactor * TDD * BG / 277700;
+    // 
+    // Add weighting (0-1) of 24 h TDD vs manually entered averageTDD
     //
     // New logarithmic formula : var newRatio = profile.sens * adjustmentFactor * TDD * ln(( BG/insulinFactor) + 1 )) / 1800
     // Scaling of TDD impact on CR: crScaleFactor 1 = unscaled, <1 = reduced impact of TDD
     
     if (preferences.useNewFormula == true) {
-        var newRatio = profile.sens * adjustmentFactor * TDD * Math.log(BG/insulinFactor+1) / 1800;
-        var crRatio = ((profile.sens * adjustmentFactor * TDD * Math.log(crSensRefBG/insulinFactor+1) / 1800) -1) * crScaleFactor + 1;  // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL), scaled by crScaleFactor
+        var newRatio = profile.sens * adjustmentFactor * weightedTDD * Math.log(BG/insulinFactor+1) / 1800;
+        var crRatio = ((profile.sens * adjustmentFactor * weightedTDD * Math.log(crSensRefBG/insulinFactor+1) / 1800) -1) * crScaleFactor + 1;  // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL), scaled by crScaleFactor
         formula = "Logarithmic formula. InsulinFactor: " + insulinFactor + ". ";
 
     }
     else {
-        var newRatio = profile.sens * adjustmentFactor * TDD * BG / 277700;
-        var crRatio = ((profile.sens * adjustmentFactor * TDD * crSensRefBG / 277700) -1) * crScaleFactor + 1; // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL), scaled by crScaleFactor
+        var newRatio = profile.sens * adjustmentFactor * weightedTDD * BG / 277700;
+        var crRatio = ((profile.sens * adjustmentFactor * weightedTDD * crSensRefBG / 277700) -1) * crScaleFactor + 1; // TDD-corrected crRatio calculated at crSensRefBG (e.g. 100 mg/dL), scaled by crScaleFactor
         formula = "Original formula. ";
     }
             
